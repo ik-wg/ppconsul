@@ -131,18 +131,17 @@ namespace ppconsul { namespace curl {
 
     HttpClient::HttpClient(const std::string& addr)
     : m_addr(helpers::makeAddress(addr))
-    , m_handle(nullptr)
     {
         static const CurlInitializer g_initialized;
 
         if (!g_initialized)
             throw std::runtime_error("CURL was not successfully initialized");
 
-        m_handle = curl_easy_init();
+        m_handle.reset(curl_easy_init());
         if (!m_handle)
             throw std::runtime_error("CURL handle creation failed");
 
-        if (auto err = curl_easy_setopt(m_handle, CURLOPT_ERRORBUFFER, m_errBuffer))
+        if (auto err = curl_easy_setopt(handle(), CURLOPT_ERRORBUFFER, m_errBuffer))
             throwCurlError(err, "");
 
         // TODO: CURLOPT_NOSIGNAL?
@@ -151,11 +150,7 @@ namespace ppconsul { namespace curl {
         setopt(CURLOPT_READFUNCTION, &readCallback);
     }
 
-    HttpClient::~HttpClient()
-    {
-        if (m_handle)
-            curl_easy_cleanup(m_handle);
-    }
+    HttpClient::~HttpClient() = default;
 
     HttpClient::GetResponse HttpClient::get(const std::string& path)
     {
@@ -213,7 +208,7 @@ namespace ppconsul { namespace curl {
     template<class Opt, class T>
     inline void HttpClient::setopt(Opt opt, const T& t)
     {
-        const auto err = curl_easy_setopt(m_handle, opt, t);
+        const auto err = curl_easy_setopt(handle(), opt, t);
         if (err)
             throwCurlError(err, m_errBuffer);
     }
@@ -221,7 +216,7 @@ namespace ppconsul { namespace curl {
 
     inline void HttpClient::perform()
     {
-        const auto err = curl_easy_perform(m_handle);
+        const auto err = curl_easy_perform(handle());
         if (err)
             throwCurlError(err, m_errBuffer);
     }

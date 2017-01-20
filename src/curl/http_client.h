@@ -12,6 +12,17 @@
 
 namespace ppconsul { namespace curl {
 
+    namespace detail
+    {
+        struct CurlEasyDeleter
+        {
+            void operator() (CURL *handle) const PPCONSUL_NOEXCEPT
+            {
+                curl_easy_cleanup(handle);
+            }
+        };
+    }
+
     class HttpClient: public ppconsul::http::impl::Client
     {
     public:
@@ -36,10 +47,12 @@ namespace ppconsul { namespace curl {
 
         std::string makeUrl(const std::string& path) const { return m_addr + path; }
 
+        CURL *handle() const PPCONSUL_NOEXCEPT { return m_handle.get(); }
+
         void perform();
 
         std::string m_addr;
-        CURL *m_handle; // TODO: use unique_ptr<CURL, ...>
+        std::unique_ptr<CURL, detail::CurlEasyDeleter> m_handle;
         char m_errBuffer[CURL_ERROR_SIZE]; // TODO: replace with unique_ptr<char[]> to allow move
     };
 
