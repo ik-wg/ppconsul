@@ -4,6 +4,12 @@ The status of Consul HTTP API v1 coverage. The API is extending on each Consul r
 
 Note that all implemented features are tested with automated integration tests.
 
+## General
+
+### Blocking Queries
+
+Blocking query feature is supported in straitforward way: when API that supports blocking queries is called with keyword `block_for=` then the call blocks. There is no smart things like async non-block handling with calbacks, backgound polling etc. If you have any ideas/suggerstions of a convenient interface to work with blocking queries, you are welcome.
+
 ## Endpoints
 
 ### ACLs
@@ -17,7 +23,6 @@ Endpoint is supported except the following:
 - Endpoint [`/v1/agent/leave`](https://www.consul.io/docs/agent/http/agent.html#agent_leave)
 - Endpoint [`/v1/agent/maintenance`](https://www.consul.io/docs/agent/http/agent.html#agent_maintenance)
 - Endpoint [`/v1/agent/service/maintenance`](https://www.consul.io/docs/agent/http/agent.html#agent_service_maintenance)
-- ACL tokens
 - Specify an initial status for checks (`"Status"` field)
 - Automatic unregistration of services associated with checks (`"DeregisterCriticalServiceAfter"` field)
 - Multiple checks associated with a single service.
@@ -28,7 +33,6 @@ Endpoint is supported except the following:
 Endpoint is supported except the following:
 - ACL tokens
 - Parameter `?near=` for querying nodes and services
-- Support of blocking queries is limited [[1]].
 - Registration/deregistration. Please use the agent endpoint instead. There is no plan to support it any time soon unless requested by users.
 
 ### Events
@@ -40,10 +44,7 @@ Endpoint support is in progress.
 ### Key/Value Store (KV)
 
 Endpoint is supported except the following:
-- Endpoint [`/v1/txn`](https://www.consul.io/docs/agent/http/kv.html#txn)
-- ACL tokens
-- Lock acquiring / release. Will be implemented after Session endpoint.
-- Support of blocking queries is limited [[1]].
+- Transaction endpoint [`/v1/txn`](https://www.consul.io/docs/agent/http/kv.html#txn)
 
 At the moment it's only possible to work with values as strings, but there is a plan to add a typed interface, something like `get<int>(key)`, `put(key, some_double)`, etc. 
 
@@ -61,11 +62,3 @@ TBD
 
 ### Status
 TBD
-
-## Notes
-[1]: #blocking-queries-note "Blocking Queries Note"
-
-### Blocking Queries Note
-Blocking queries are supported in very primitive way: if query is called with extra parameter specifying wait timeout and index then the call blocks.
-Background polling, async non-block handling and other smart things to work with blocking queries in a more effective way are in the far future plan.
-If you have any ideas/suggerstions of a convenient interface to work with blocking queries, you are more than welcome.

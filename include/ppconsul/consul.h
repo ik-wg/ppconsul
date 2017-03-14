@@ -26,12 +26,12 @@
 
 namespace ppconsul {
 
-    namespace keywords {
-        PPCONSUL_PARAM(dc, std::string)
-        PPCONSUL_PARAM(token, std::string)
-        PPCONSUL_PARAM_NO_NAME(consistency, Consistency)
-        PPCONSUL_PARAM_NO_NAME(block_for, BlockForValue)
-        PPCONSUL_PARAM(tag, std::string)
+    namespace kw {
+        PPCONSUL_KEYWORD(dc, std::string)
+        PPCONSUL_KEYWORD(token, std::string)
+        PPCONSUL_KEYWORD(tag, std::string)
+        KWARGS_KEYWORD(consistency, Consistency)
+        KWARGS_KEYWORD(block_for, BlockForValue)
 
         inline void printParameter(std::ostream& os, const Consistency& v, KWARGS_KW_TAG(consistency))
         {
@@ -86,11 +86,11 @@ namespace ppconsul {
         // - token - default token for all client requests (can be overloaded in every specific request)
         template<class... Params, class = kwargs::enable_if_kwargs_t<Params...>>
         explicit Consul(const std::string& addr, const Params&... params)
-        : Consul(kwargs::get_opt(keywords::token, std::string(), params...),
-                kwargs::get_opt(keywords::dc, std::string(), params...),
+        : Consul(kwargs::get_opt(kw::token, std::string(), params...),
+                kwargs::get_opt(kw::dc, std::string(), params...),
                 addr)
         {
-            KWARGS_CHECK_IN_LIST(Params, (keywords::dc, keywords::token))
+            KWARGS_CHECK_IN_LIST(Params, (kw::dc, kw::token))
         }
 
         // Same as Consul(Default_Server_Address, ...)
@@ -163,8 +163,7 @@ namespace ppconsul {
         template<class... Params, class = kwargs::enable_if_kwargs_t<Params...>>
         std::string makeUrl(const std::string& path, const Params&... params) const
         {
-            using namespace keywords;
-            return parameters::makeUrl(path, dc = m_dataCenter, token = m_defaultToken, params...);
+            return parameters::makeUrl(path, kw::dc = m_dataCenter, kw::token = m_defaultToken, params...);
         }
 
         // TODO: make impl funcs inline
